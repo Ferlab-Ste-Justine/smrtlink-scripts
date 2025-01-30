@@ -1,0 +1,22 @@
+name: Publish Image Using latest
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  push-python-image:
+    name: Publish Python Image using latest tag
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Push the image on the registry
+        uses: Ferlab-Ste-Justine/action-push-image@v2
+        with:
+          username: ${{ secrets.FERLAB_DOCKER_HUB_USER }}
+          password: ${{ secrets.FERLAB_DOCKER_HUB_TOKEN }}
+          image: ferlabcrsj/smrlink-scripts
+          location: python
+          dockerfile: python/Dockerfile
+          tag_format: "latest"
