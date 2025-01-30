@@ -27,14 +27,14 @@ Then run the docker container.
 Here we assume that you want to pass the file `your_input_folder/input.txt` as input to the script.
 
 ```
-docker run --rm --env-file .venv  -v your_input_folder:/data ferlabcrsj/smrlink-scripts:1.0.0 python updateURL.py /data/input.txt
+docker run --rm --env-file .venv  -v your_input_folder:/data ferlabcrsj/smrtlink-scripts:1.0.0 python updateURL.py /data/input.txt
 ```
 
 Here are details about the different parts of this command:
 - `--rm`: Automatically remove the container when it exists.
 - `--env-file .env`: Loads environment variables from the `.env` file in the container.
 - `-v your_input_folder:/data`: Mounts the `your_input_folder` directory from the host to the container at `/data`.
-- `ferlabcrsj/smrlink-scripts:1.0.0`: The name and tag of the docker image.
+- `ferlabcrsj/smrtlink-scripts:1.0.0`: The name and tag of the docker image.
 - `python updateURL.py /data/input.txt`: The command to run on the container
 
 ## Automatic image build via github actions
@@ -47,11 +47,11 @@ The build process is triggered when:
 
  Depending on the event that triggered the build, different tags are associated to the docker image.  
 - **Semantic Versioning Tag (semver)**:
-   When a git tag in semver format is pushed to the repository the docker image tag will match the git tag. For example, pushing the git tag `v1.0.0` will result in a new docker image tagged as `ferlabcrsj/smrlink-scripts:1.0.0`. Note that only semver tags are supported, which means the tag format must be `vX.Y.Z`.
+   When a git tag in semver format is pushed to the repository the docker image tag will match the git tag. For example, pushing the git tag `v1.0.0` will result in a new docker image tagged as `ferlabcrsj/smrtlink-scripts:1.0.0`. Note that only semver tags are supported, which means the tag format must be `vX.Y.Z`.
  - **Latest tag**:
-   When a pull request is merged into the main branch, the image is rebuilt with the tag `latest`, i.e. `ferlabcrsj/smrlink-scripts:latest`. So this image always match the Dockerfile on the main branch.
+   When a pull request is merged into the main branch, the image is rebuilt with the tag `latest`, i.e. `ferlabcrsj/smrtlink-scripts:latest`. So this image always match the Dockerfile on the main branch.
 - **Commit SHA Tag**:
-   A new image with the commit sha as the tag is also created when a pull request is merged into the main branch  (ex: `ferlabcrsj:smrlink-scripts/cca9acc45e40b96374312b80e3e99af49991ec6e`).
+   A new image with the commit sha as the tag is also created when a pull request is merged into the main branch  (ex: `ferlabcrsj:smrtlink-scripts/cca9acc45e40b96374312b80e3e99af49991ec6e`).
 
 To create and push a new git tag, you can use the following commands:
 
@@ -71,7 +71,7 @@ Run this command from the root of the smrtlink-scripts repository.
 You can use any image name and tag of your choice:
 
 ```
-docker build -t ferlabcrsj/smrlink-scripts:dev  -f python/Dockerfile  python
+docker build -t ferlabcrsj/smrtlink-scripts:dev  -f python/Dockerfile  python
 ```
 
 ## Update python dependencies
