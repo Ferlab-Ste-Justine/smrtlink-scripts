@@ -7,14 +7,13 @@ import json
 import os
 import sys
 
-
 AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
 AWS_ENDPOINT_URL = os.environ.get('AWS_ENDPOINT_URL', 'https://objets.juno.calculquebec.ca')
 GENEYX_API_URL = os.environ.get('GENEYX_API_URL', 'https://analysis.geneyx.com/api/updateSample')
 GENEYX_API_USER_ID = os.environ.get('GENEYX_API_USER_ID')
 GENEYX_API_USER_KEY = os.environ.get('GENEYX_API_USER_KEY')
-PACBIO_DATA_BUCKET =  os.environ.get('PACBIO_DAgTA_BUCKET','decodeur-pacbio')
+PACBIO_DATA_BUCKET =  os.environ.get('PACBIO_DATA_BUCKET','decodeur-pacbio')
 
 def generate_presigned_url(s3_client,bucket_name, object_key, expiration=3600):
     """
@@ -34,7 +33,6 @@ def generate_presigned_url(s3_client,bucket_name, object_key, expiration=3600):
 
 
 def loadDataJson(file):
-    print(file)
     with open(file, 'r') as stream:
         try:
             data = json.load(stream)            
@@ -93,18 +91,18 @@ def main():
         "MethylationUrl": combined_methyl,\
         "SerialNumber": vcfName}
 
-        #data=json.dumps(jsonDict)
         with open('updateURL.json', 'w') as fp:
             jsonFile=json.dump(jsonDict,fp)
         data=loadDataJson("updateURL.json")
-        print(data)
         api = GENEYX_API_URL
         print(f"Updating {sample_name}")
         r = requests.post(api, json=data)
         code = str(r.content)
-        print(code)
         if "error" in code :
             errorList.append(sample_name)
+            print(f"{sample_name} failed to send")
+        else:
+            print("Success")
 
     if len(errorList) == len(nameList):
         print("All samples failed to be sent")
