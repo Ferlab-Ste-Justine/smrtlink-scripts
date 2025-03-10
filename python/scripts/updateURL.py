@@ -6,14 +6,15 @@ import requests
 import json
 import os
 import sys
-
-AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
-AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
-AWS_ENDPOINT_URL = os.environ.get('AWS_ENDPOINT_URL', 'https://objets.juno.calculquebec.ca')
-GENEYX_API_URL = os.environ.get('GENEYX_API_URL', 'https://analysis.geneyx.com/api/updateSample')
-GENEYX_API_USER_ID = os.environ.get('GENEYX_API_USER_ID')
-GENEYX_API_USER_KEY = os.environ.get('GENEYX_API_USER_KEY')
-PACBIO_DATA_BUCKET =  os.environ.get('PACBIO_DATA_BUCKET','decodeur-pacbio')
+from dotenv import load_dotenv 
+load_dotenv()
+AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
+AWS_ENDPOINT_URL = os.getenv('AWS_ENDPOINT_URL', 'https://objets.juno.calculquebec.ca')
+GENEYX_API_URL = os.getenv('GENEYX_API_URL', 'https://analysis.geneyx.com/api/updateSample')
+GENEYX_API_USER_ID = os.getenv('GENEYX_API_USER_ID')
+GENEYX_API_USER_KEY = os.getenv('GENEYX_API_USER_KEY')
+PACBIO_DATA_BUCKET =  os.getenv('PACBIO_DATA_BUCKET','decodeur-pacbio')
 
 def generate_presigned_url(s3_client,bucket_name, object_key, expiration=3600):
     """
@@ -70,7 +71,6 @@ def main():
         methyl_url = generate_presigned_url(s3_client,bucket_name, methyl_file, expiration=6048000)
         methyl_index_url = generate_presigned_url(s3_client,bucket_name, methyl_index, expiration=6048000)
         if bam_url and bai_url:
-            print("Presigned URL for BAM file:")
             combined_url=f"{bam_url}$${bai_url}"
             print(combined_url)
             combined_methyl=f"{methyl_url}$${methyl_index_url}"
@@ -95,14 +95,12 @@ def main():
             jsonFile=json.dump(jsonDict,fp)
         data=loadDataJson("updateURL.json")
         api = GENEYX_API_URL
-        print(f"Updating {sample_name}")
         r = requests.post(api, json=data)
-        code = str(r.content)
-        if "error" in code :
+        code = r.json()
+        if "error" in code["Code"] :
             errorList.append(sample_name)
             print(f"{sample_name} failed to send")
-        else:
-            print("Success")
+            print(code)
 
     if len(errorList) == len(nameList):
         print("All samples failed to be sent")
