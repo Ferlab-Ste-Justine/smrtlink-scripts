@@ -59,8 +59,29 @@ def main():
         sample_name = nameline.split(",")[0]
         version = nameline.split(",")[1]
         bucket_name = PACBIO_DATA_BUCKET
+
+        #2 possibilities for version:
+        #- Version is just an integer (1 or 2) which is just the format of the VCF
+        #- Version contains the trioName/Role (ex p001/Proband, p022/Father)
+        #   which is a different VCF and path format for joint calls
+        if version=="1":
+            vcfName=sample_name+".GRCh38.deepvariant.phased.vcf.gz"
+            base_folder = f"S3-Storage/{sample_name}/"
+        elif version=="2":
+            vcfName=sample_name+".GRCh38.small_variants.phased.vcf.gz"
+            base_folder = f"S3-Storage/{sample_name}/"
+
+        elif "/" in version and ("proband" in version or "mother" in version or "father" in version):
+            trioName = version.split("/")[0]
+            role = version.split("/")[1]
+            vcfName= f"{sample_name}.{trioName}.joint.GRCh38.small_variants.phased.vcf.gz"
+            base_folder = f"S3-Storage/{trioName}/{role}/"
+        else:
+            print(f"Version did not match: {version} for sample {sample_name}")
+            sys.exit()
+
+
         # BAM and BAI files are in the same folder
-        base_folder = f"S3-Storage/{sample_name}/"
         bam_file = f"{base_folder}{sample_name}.haplotagged.bam"
         bai_file = f"{base_folder}{sample_name}.haplotagged.bam.bai"
         methyl_file = f"{base_folder}{sample_name}.GRCh38.cpg_pileup.combined.bed.gz"
@@ -76,13 +97,6 @@ def main():
             combined_methyl=f"{methyl_url}$${methyl_index_url}"
         else:
             print(f"Failed to generate presigned URL for {sample_name}")
-            sys.exit()
-        if version=="1":
-            vcfName=sample_name+".GRCh38.deepvariant.phased.vcf.gz"
-        elif version=="2":
-            vcfName=sample_name+".GRCh38.small_variants.phased.vcf.gz"
-        else:
-            print(f"Version did not match: {version} for sample {sample_name}")
             sys.exit()
 
         jsonDict={"ApiUserID": GENEYX_API_USER_ID,\
