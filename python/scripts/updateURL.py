@@ -62,24 +62,17 @@ def main():
         bucket_name = PACBIO_DATA_BUCKET
 
         #2 possibilities for version:
-        #- Version is just an integer (1 or 2) which is just the format of the VCF
-        #- Version contains the trioName/Role (ex p001/Proband, p022/Father)
+        #- Version is the name of the vcf directly
+        #- Version follows trioName/Role/vcfName (ex p001/Proband/XXX.vcf, p022/Father/YYY.vcf)
         #   which is a different VCF and path format for joint calls
-        if version=="1":
-            vcfName=sample_name+".GRCh38.deepvariant.phased.vcf.gz"
-            base_folder = f"S3-Storage/{sample_name}/"
-        elif version=="2":
-            vcfName=sample_name+".GRCh38.small_variants.phased.vcf.gz"
-            base_folder = f"S3-Storage/{sample_name}/"
-
-        elif "/" in version and ("proband" in version or "mother" in version or "father" in version):
+        if "/" in version and ("proband" in version or "mother" in version or "father" in version):
             trioName = version.split("/")[0]
             role = version.split("/")[1]
-            vcfName= f"{sample_name}.{trioName}.joint.GRCh38.small_variants.phased.vcf.gz"
+            vcfName= version.split("/")[2]
             base_folder = f"S3-Storage/{trioName}/{role}/"
         else:
-            print(f"Version did not match: {version} for sample {sample_name}")
-            sys.exit()
+            vcfName = version
+            base_folder = f"S3-Storage/{sample_name}/"
 
 
         # BAM and BAI files are in the same folder

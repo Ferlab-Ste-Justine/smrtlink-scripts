@@ -14,13 +14,12 @@ The goal is to prevent unauthorized access of potentially identifying informatio
 
 Requirements:
 As described [here](https://github.com/Ferlab-Ste-Justine/smrtlink-scripts/blob/main/python/README.md#running-the-updateurlpy-script), this script requires environment variables for key ID and access, both for the s3 bucket and the GeneYX account. 
-A second requirement is to include a file as argument containing the sample names and their path version on GeneYX, separated by comma. A version of "1" corresponds to samples using the format "{sample_name}.GRCh38.deepvariant.phased.vcf.gz" on GeneYX, and the version "2" corresponds to: "{sample_name}.GRCh38.small_variants.phased.vcf.gz".
+A second requirement is to include a file as argument containing the sample names and their vcf Name on GeneYX, separated by comma. For joint calls, the vcf name is preceded by the family ID and the role of the sample, separated by slash ('/').
 The input file will use a format like the following:
 
 ```
-sample_1,1
-sample_2,1
-sample_3,2
+sample_1,sample_1_vcf.vcf.gz
+sample_2,familyID/father/father_familyID.vcf.gz
 ```
 The script will print the combined URL of BAM and methylation files for all samples, along with a code of "success" or "{sample_name} failed to send". 
 Once all the files are processed, a list of the samples that failed to send is printed. 
