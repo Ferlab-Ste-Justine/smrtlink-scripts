@@ -55,10 +55,16 @@ def main():
     with open(sys.argv[1]) as f:
         nameList = f.read().splitlines()
 
-    errorList=[]
+    errorList = []
     for nameline in nameList:
-        sample_name = nameline.split(",")[0]
-        version = nameline.split(",")[1]
+        parts = nameline.split(",")
+        if len(parts) < 2:
+            print(f"Skipping malformed line (expected 'sample_name,version'): {nameline!r}")
+            continue
+        sample_name = parts[0]
+        print(sample_name)
+        version = parts[1]
+
         bucket_name = PACBIO_DATA_BUCKET
 
         #2 possibilities for version:
