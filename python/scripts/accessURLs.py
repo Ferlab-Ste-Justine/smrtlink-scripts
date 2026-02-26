@@ -17,7 +17,7 @@ def main():
         url_dict = json.load(json_file)
     # Avoid downloading BAM files if "nobam" argument is provided (useful for testing, BAMs are very large)
     skip_bam = False
-    if sys.argv[1] == "nobam":
+    if len(sys.argv) > 1 and sys.argv[1] == "nobam":
         print("Skipping BAM file downloads")
         skip_bam = True
     for decodeur_id, urls in url_dict.items():
@@ -48,11 +48,20 @@ def main():
                         print(f"Downloading {url_type} for {decodeur_id}")
                         total_size = int(r.headers.get("content-length", 0))
                         chunk_size = 8192
-                        with tqdm(initial=resume_byte_pos, total=total_size, unit="B", unit_scale=True) as progress_bar:
+                        effective_total = resume_byte_pos + total_size if total_size else None
+                        with tqdm(initial=resume_byte_pos, total=effective_total, unit="B", unit_scale=True) as progress_bar:
                             with open(local_filepath, mode) as f:
                                 for chunk in r.iter_content(chunk_size): 
                                     progress_bar.update(len(chunk))
                                     f.write(chunk)
+
+                        # Verify that the final file size matches the expected size (if known)
+                        if total_size > 0:
+                            expected_total_size = resume_byte_pos + total_size
+                            actual_size = os.path.getsize(local_filepath)
+                            if actual_size != expected_total_size:
+                                print(f"Warning: Downloaded file size for {local_filepath} ({actual_size} bytes) does not match expected size ({expected_total_size} bytes). Skipping md5 generation.")
+                                continue
                     with open(f"{local_filepath}.md5", "w") as md5_file:
                         subprocess.run(["md5sum", local_filepath], stdout=md5_file, check=True)
                 except requests.RequestException as e:

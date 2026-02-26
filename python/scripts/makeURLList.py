@@ -15,7 +15,7 @@ PACBIO_DATA_BUCKET =  os.getenv('PACBIO_DATA_BUCKET','decodeur-pacbio')
 
 #This script will need a sample name list as input, in the format of "trio_name,decodeur_id" per line. 
 # It will generate a JSON list of presigned URLs called decodeurURL.json 
-# for the BAM files, methylation files and haplotype files for the probands,
+# for the BAM files, methylation files and haplotype files,
 # The URLs will be valid for 10 days (864000 seconds).
 
 def main():
@@ -35,11 +35,15 @@ def main():
     if os.path.exists('decodeurURL.json'):
         os.remove('decodeurURL.json')
 
-    url_dict={}
+    url_dict = {}
     for nameline in nameList:
-        trio_name = nameline.split(",")[0]
+        parts = nameline.split(",")
+        if len(parts) < 2:
+            print(f"Skipping malformed line (expected 'trio_name,decodeur_id'): {nameline!r}")
+            continue
+        trio_name = parts[0]
         print(trio_name)
-        decodeur_id = nameline.split(",")[1]
+        decodeur_id = parts[1]
         bucket_name = PACBIO_DATA_BUCKET
 
         # The base folder depends on the role of the sample, found in the decodeur_id
@@ -75,8 +79,8 @@ def main():
         hap2_url = generate_presigned_url(s3_client,bucket_name, hap2_file, expiration=864000)
         hap2_index_url = generate_presigned_url(s3_client,bucket_name, hap2_index, expiration=864000)
         if not bam_url or not bai_url or not methyl_url or not methyl_index_url or not hap1_url or not hap1_index_url or not hap2_url or not hap2_index_url:
-            print(f"Failed to generate presigned URL for {trio_name} proband")
-            sys.exit()
+            print(f"Failed to generate presigned URL for {trio_name} {role}")
+            sys.exit(1)
 
         url_dict[decodeur_id] = {
         "bam_url": bam_url,
@@ -91,7 +95,7 @@ def main():
         print(url_dict[decodeur_id])
 
     with open('decodeurURL.json', 'w') as fp:
-        jsonFile=json.dump(url_dict,fp)
+        json.dump(url_dict,fp)
 
     print(f"Generated URL list decodeurURL.json for {len(url_dict)} samples")
 
